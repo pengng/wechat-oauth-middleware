@@ -40,7 +40,7 @@ OAuth.prototype = {
       });
     } else {
       // 回调
-      var url = this.getAuthorizeURL(config.host + req.url, 'snsapi_userinfo', 'fromWX');
+      var url = this.getAuthorizeURL('http://' + req.headers.host + req.url, 'snsapi_userinfo', 'fromWX');
       res.redirect(url);
       
     }
