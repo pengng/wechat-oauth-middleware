@@ -1,0 +1,20 @@
+{
+  "name": "wechat-oauth",
+  "version": "1.0.0",
+  "description": "wechat authorized callback middleware(微信授权回调中间件)",
+  "main": "index.js",
+  "keywords": [
+    "wechat",
+    "OAuth",
+    "middleware",
+    "callback"
+  ],
+  "author": "pengng",
+  "license": "ISC",
+  "devDependencies": {
+    "chai": "^3.5.0"
+  },
+  "dependencies": {
+    "request": "^2.81.0"
+  }
+}
