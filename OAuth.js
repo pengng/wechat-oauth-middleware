@@ -1,10 +1,9 @@
 const querystring = require('querystring');
 const request = require('request');
 
-const OAuth = function (appId, appSecret) {
-  this.appId = appId;
-  this.appSecret = appSecret;
-  return this.wxLogin.bind(this);
+const OAuth = function (option) {
+  this.appId = option.appId;
+  this.appSecret = option.appSecret;
 };
 
 OAuth.prototype = {

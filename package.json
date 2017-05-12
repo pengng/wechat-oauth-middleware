@@ -1,13 +1,13 @@
 {
   "name": "wechat-oauth",
   "version": "1.0.0",
-  "description": "wechat authorized callback middleware(微信授权回调中间件)",
+  "description": "wechat OAuth middleware(微信公众号OAuth中间件)",
   "main": "index.js",
   "keywords": [
     "wechat",
     "OAuth",
     "middleware",
-    "callback"
+    "微信公众号"
   ],
   "author": "pengng",
   "license": "ISC",
