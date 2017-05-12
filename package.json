@@ -1,7 +1,7 @@
 {
-  "name": "wechat-oauth",
+  "name": "wechat-oauth-middleware",
   "version": "1.0.0",
-  "description": "wechat OAuth middleware(微信公众号OAuth中间件)",
+  "description": "Express middleware. Used to obtain WeChat user information.",
   "main": "index.js",
   "keywords": [
     "wechat",
