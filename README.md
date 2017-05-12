@@ -14,6 +14,7 @@ const session = require('express-session');
 
 var app = express();
 
+// First call express-session middleware
 app.use(session());
 app.use(wechatMiddleware({
   appId: '', // your wechat public appId
@@ -30,7 +31,6 @@ MIT
 # 微信服务号OAuth授权获取用户信息
 
 Express 中间件。用于获取微信用户信息。需要微信服务号。
-i.Required express framework
 
 ## 使用方法
 ```
