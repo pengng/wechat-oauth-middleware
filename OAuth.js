@@ -10,7 +10,6 @@ const OAuth = function (option) {
 OAuth.prototype = {
 
   wxLogin: function (req, res, next) {
-    console.log('test');
     if (typeof req.headers['user-agent'] != 'string' || 
         !(/micromessenger/i.test(req.headers['user-agent']))) {
 
