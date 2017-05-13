@@ -13,25 +13,43 @@ OAuth.prototype = {
 
   wxLogin: function (req, res, next) {
 
-    if (typeof req.headers['user-agent'] != 'string' || 
+    if (typeof req.query.oauthredirect === 'string') {
+      // If it is used as OAuth forwarding middleware
+      // 如果是作为OAuth转发中间件使用
+      var url = decodeURIComponent(req.query.oauthredirect);
+      var urlJson = urlParser(url, true);
+      for (let i in req.query) {
+        if (i != 'oauthredirect') {
+          urlJson.query[i] = req.query[i];
+        }
+      }
+
+      var newUrl = `${urlJson.protocol}//${urlJson.host}${urlJson.pathname}?${querystring.stringify(urlJson.query)}`;
+      res.redirect(newUrl);
+      
+    } else if (typeof req.headers['user-agent'] != 'string' || 
         !(/micromessenger/i.test(req.headers['user-agent']))) {
 
+      // Not a WeChat browser
       // 非微信浏览器
       next();
     // } else if (process.env.NODE_ENV != 'pro') {
 
+      // Not the production environment
       // 非生产环境
     //  next();
     } else if (typeof req.session.wxUser == 'object') {
 
-      // 登录过
+      // Cached
+      // 缓存过
       next();
     } else if (
         typeof req.query.code == 'string' &&
         typeof req.query.state == 'string' && 
         req.query.state == 'fromWX') {
 
-      // 获取
+      // Get user information
+      // 获取用户信息
       this.getAccessToken(req.query.code).then(result => {
 
         if (result.errcode) {
@@ -55,6 +73,8 @@ OAuth.prototype = {
           //   "errcode": 40163,
           //   "errmsg": "code been used"
           // }
+          // code invalid or has been used
+          // code 无效或已经使用过
           if (err == 40029 || err == 40163) {
 
             var pathname = req.url.split('?')[0];
@@ -71,7 +91,9 @@ OAuth.prototype = {
 
       });
     } else {
-      // 回调
+
+      // redirect
+      // 重定向
       var url = urlParser.resolve(this.host, req.url);
       var oauthUrl = this.getAuthorizeURL(url, 'snsapi_userinfo', 'fromWX');
       res.redirect(oauthUrl);
