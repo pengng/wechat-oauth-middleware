@@ -1,6 +1,6 @@
 {
   "name": "wechat-oauth-middleware",
-  "version": "1.0.2",
+  "version": "1.1.2",
   "description": "Express middleware. Used to obtain WeChat user information.",
   "main": "index.js",
   "scripts": {

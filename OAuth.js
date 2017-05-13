@@ -83,7 +83,7 @@ OAuth.prototype = {
 
     if (this.proxy) {
       var params = {
-        redirect: encodeURIComponent(redirect)
+        oauthredirect: encodeURIComponent(redirect)
       };
       redirect = `${this.proxy}?${querystring.stringify(params)}`;
     }

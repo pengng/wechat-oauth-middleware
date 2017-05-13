@@ -19,6 +19,7 @@ app.use(session());
 app.use(wechatMiddleware({
   appId: '', // your wechat public appId
   appSecret: '' // your wechat public appSecret
+  host: '' // The domain name of your webapp. Like http://webapp.xxx.com
 }));
 
 app.get('/', function (req, res) {
@@ -49,6 +50,7 @@ app.use(session());
 app.use(wechatMiddleware({
   appId: '', // 填入微信服务号的appId
   appSecret: '' // 填入微信服务号的appSecret
+  host: '' // 填入你的webapp的域名，例如 http://app.xxx.com
 }));
 
 
