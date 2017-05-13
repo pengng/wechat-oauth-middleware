@@ -81,7 +81,7 @@ OAuth.prototype = {
     var url = 'https://open.weixin.qq.com/connect/oauth2/authorize';
     var info = {
       appid: this.appId,
-      redirect_uri: encodeURIComponent(redirect),
+      redirect_uri: encodeURI(redirect),
       response_type: 'code',
       scope: scope || 'snsapi_base',
       state: state || ''
