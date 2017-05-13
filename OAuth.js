@@ -1,4 +1,5 @@
 const querystring = require('querystring');
+const urlParser = require('url');
 const https = require('https');
 
 const OAuth = function (option) {
@@ -59,7 +60,7 @@ OAuth.prototype = {
             var pathname = req.url.split('?')[0];
             delete req.query.code;
             delete req.query.state;
-            var url = `${this.host}${pathname}?${querystring.stringify(req.query)}`;
+            var url = `${urlParser.resolve(this.host, pathname)}?${querystring.stringify(req.query)}`;
             var oauthUrl = this.getAuthorizeURL(url, 'snsapi_userinfo', 'fromWX');
             res.redirect(oauthUrl);
             
@@ -71,8 +72,9 @@ OAuth.prototype = {
       });
     } else {
       // 回调
-      var url = this.getAuthorizeURL(this.host + req.url, 'snsapi_userinfo', 'fromWX');
-      res.redirect(url);
+      var url = urlParser.resolve(this.host, req.url);
+      var oauthUrl = this.getAuthorizeURL(url, 'snsapi_userinfo', 'fromWX');
+      res.redirect(oauthUrl);
       
     }
   },
