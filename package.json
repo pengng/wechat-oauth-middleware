@@ -1,15 +1,26 @@
 {
   "name": "wechat-oauth-middleware",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "description": "Express middleware. Used to obtain WeChat user information.",
   "main": "index.js",
+  "scripts": {
+    "test": "mocha -t 10000"
+  },
   "keywords": [
     "wechat",
     "OAuth",
     "middleware",
     "微信公众号"
   ],
-  "author": "pengng",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/pengng/wechat-oauth-middleware.git"
+  },
+  "author": {
+    "name": "pengng",
+    "email": "870788308@qq.com",
+    "url": "http://wakaka.win"
+  },
   "license": "ISC",
   "devDependencies": {
     "chai": "^3.5.0"
