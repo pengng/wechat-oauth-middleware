@@ -1,9 +1,10 @@
 const querystring = require('querystring');
-const request = require('request');
+const https = require('https');
 
 const OAuth = function (option) {
   this.appId = option.appId;
   this.appSecret = option.appSecret;
+  this.proxy = option.proxy;
 };
 
 OAuth.prototype = {
@@ -22,19 +23,40 @@ OAuth.prototype = {
 
       // 登录过
       next();
-    } else if (typeof req.query.code == 'string' && 
-        typeof req.query.state == 'string' && req.query.state == 'fromWX') {
+    } else if (
+        typeof req.query.code == 'string' &&
+        typeof req.query.state == 'string' && 
+        req.query.state == 'fromWX') {
 
       // 获取
       this.getAccessToken(req.query.code).then(result => {
+
+        if (result.errcode) {
+          return Promise.reject(result.errcode);
+        }
 
         return this.getUser(result.openid, result.access_token);
 
       }).then(result => {
 
         req.session.wxUser = result;
-        console.log(result);
-        res.redirect(req.url.replace(/[&]*code=.{32}&state=\w+[&]*/,''));
+        next();
+
+      }).catch(err => {
+
+          if (err == 40029) {
+
+            var pathname = req.url.split('?')[0];
+            delete req.query.code;
+            delete req.query.state;
+            var url = `http://${req.headers.host}${pathname}?${querystring.stringify(req.query)}`;
+            var oauthUrl = this.getAuthorizeURL(url, 'snsapi_userinfo', 'fromWX');
+            res.redirect(oauthUrl);
+            
+          } else {
+            console.log(err);
+            next();
+          }
 
       });
     } else {
@@ -46,10 +68,18 @@ OAuth.prototype = {
   },
 
   getAuthorizeURL: function (redirect, scope, state) {
+
+    if (this.proxy) {
+      var params = {
+        redirect: encodeURIComponent(redirect)
+      };
+      redirect = `${this.proxy}?${querystring.stringify(params)}`;
+    }
+
     var url = 'https://open.weixin.qq.com/connect/oauth2/authorize';
     var info = {
       appid: this.appId,
-      redirect_uri: redirect,
+      redirect_uri: encodeURIComponent(redirect),
       response_type: 'code',
       scope: scope || 'snsapi_base',
       state: state || ''
@@ -58,49 +88,76 @@ OAuth.prototype = {
     return `${url}?${querystring.stringify(info)}#wechat_redirect`;
   },
 
-  getAccessToken: function (code, callback) {
+  getAccessToken: function (code) {
     var url = 'https://api.weixin.qq.com/sns/oauth2/access_token';
     var info = {
       appid: this.appId,
       secret: this.appSecret,
       code: code,
       grant_type: 'authorization_code'
-    }
+    };
+
     return new Promise((resolve, reject) => {
-      request({
-        url: `${url}?${querystring.stringify(info)}`
-      }, (err, res, body) => {
-        if (typeof callback == 'function') {
-          callback(err, JSON.parse(body));
-        } else if (err) {
-          reject(err);
-        } else {
-          resolve(JSON.parse(body));
+
+      var target = `${url}?${querystring.stringify(info)}`;
+
+      this.get(target, function (err, body) {
+
+        if (err) {
+          return reject(err);
         }
+
+        resolve(JSON.parse(body));
+
       });
+
     });
   },
 
-  getUser: function (openId, accessToken, callback) {
+  getUser: function (openId, accessToken) {
     var url = 'https://api.weixin.qq.com/sns/userinfo';
     var info = {
       access_token: accessToken,
       openid: openId,
       lang: 'zh_CN'
-    }
+    };
+
     return new Promise((resolve, reject) => {
-      request({
-        url: `${url}?${querystring.stringify(info)}`
-      }, (err, res, body) => {
-        if (typeof callback == 'function') {
-          callback(err, JSON.parse(body));
-        } else if (err) {
-          reject(err);
-        } else {
-          resolve(JSON.parse(body));
+
+      var target = `${url}?${querystring.stringify(info)}`;
+
+      this.get(target, function (err, body) {
+
+        if (err) {
+          return reject(err);
         }
+
+        resolve(JSON.parse(body));
+
       });
+
     });
+  },
+
+  get: function (url, callback) {
+    
+    https.get(url, function (res) {
+      
+      var body = '';
+      res.on('data', function (chunk) {
+        body += chunk;
+      });
+
+      res.on('end', function () {
+        callback && callback(null, body);
+      });
+
+    }).on('error', function (err) {
+      
+      callback && callback(err);
+
+    });
+
   }
 };
 
