@@ -5,6 +5,7 @@ const OAuth = require('../OAuth');
 var option = {
   appId: 'wx74205b421dc1f3eb',
   appSecret: '',
+  host: 'http://app.xxx.com/',
   proxy: 'http://oauthproxy.xxx.com/'
 };
 var oauth = new OAuth(option);
