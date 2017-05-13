@@ -17,7 +17,7 @@ OAuth.prototype = {
       // If it is used as OAuth forwarding middleware
       // 如果是作为OAuth转发中间件使用
       var url = decodeURIComponent(req.query.oauthredirect);
-      var urlJson = urlParser(url, true);
+      var urlJson = urlParser.parse(url, true);
       for (let i in req.query) {
         if (i != 'oauthredirect') {
           urlJson.query[i] = req.query[i];
@@ -26,7 +26,7 @@ OAuth.prototype = {
 
       var newUrl = `${urlJson.protocol}//${urlJson.host}${urlJson.pathname}?${querystring.stringify(urlJson.query)}`;
       res.redirect(newUrl);
-      
+
     } else if (typeof req.headers['user-agent'] != 'string' || 
         !(/micromessenger/i.test(req.headers['user-agent']))) {
 

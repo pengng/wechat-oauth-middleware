@@ -46,8 +46,8 @@ describe('test OAuth.js', function () {
           var urlJson = urlParser.parse(url, true);
           url = decodeURIComponent(urlJson.query.redirect_uri);
           urlJson = urlParser.parse(url, true);
-          url = decodeURIComponent(urlJson.query.redirect);
-          expect(url).to.equal(`http://${req.headers.host}${req.url}`);
+          url = decodeURIComponent(urlJson.query.oauthredirect);
+          expect(url).to.equal(urlParser.resolve(oauth.host, req.url));
           
           req.session.wxUser = {
             nickname: 'xiaobai',
@@ -100,7 +100,7 @@ describe('test OAuth.js', function () {
 
       expect(proxy).to.equal(option.proxy);
 
-      var redirect2 = decodeURIComponent(urlJson.query.redirect);
+      var redirect2 = decodeURIComponent(urlJson.query.oauthredirect);
       expect(redirect2).to.equal(redirect);
 
     });
