@@ -4,14 +4,14 @@ const https = require('https');
 const OAuth = function (option) {
   this.appId = option.appId;
   this.appSecret = option.appSecret;
+  this.host = option.host;
   this.proxy = option.proxy;
 };
 
 OAuth.prototype = {
 
   wxLogin: function (req, res, next) {
-    console.log('test');
-    console.log('test33');
+
     if (typeof req.headers['user-agent'] != 'string' || 
         !(/micromessenger/i.test(req.headers['user-agent']))) {
 
@@ -46,12 +46,20 @@ OAuth.prototype = {
 
       }).catch(err => {
 
+          // {
+          //   "errcode": 40029,
+          //   "errmsg": "invalid code"
+          // }
+          // {
+          //   "errcode": 40163,
+          //   "errmsg": "code been used"
+          // }
           if (err == 40029 || err == 40163) {
 
             var pathname = req.url.split('?')[0];
             delete req.query.code;
             delete req.query.state;
-            var url = `http://${req.headers.host}${pathname}?${querystring.stringify(req.query)}`;
+            var url = `${this.host}${pathname}?${querystring.stringify(req.query)}`;
             var oauthUrl = this.getAuthorizeURL(url, 'snsapi_userinfo', 'fromWX');
             res.redirect(oauthUrl);
             
@@ -63,7 +71,7 @@ OAuth.prototype = {
       });
     } else {
       // 回调
-      var url = this.getAuthorizeURL('http://' + req.headers.host + req.url, 'snsapi_userinfo', 'fromWX');
+      var url = this.getAuthorizeURL(this.host + req.url, 'snsapi_userinfo', 'fromWX');
       res.redirect(url);
       
     }
