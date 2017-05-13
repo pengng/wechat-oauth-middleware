@@ -46,7 +46,7 @@ OAuth.prototype = {
 
       }).catch(err => {
 
-          if (err == 40029) {
+          if (err == 40029 || err == 40163) {
 
             var pathname = req.url.split('?')[0];
             delete req.query.code;
