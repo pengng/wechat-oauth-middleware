@@ -18,14 +18,11 @@
   },
   "author": {
     "name": "pengng",
-    "email": "870788308@qq.com",
-    "url": "http://wakaka.win"
+    "email": "870788308@qq.com"
   },
   "license": "ISC",
   "devDependencies": {
     "chai": "^3.5.0"
   },
-  "dependencies": {
-    "request": "^2.81.0"
-  }
+  "dependencies": {}
 }
