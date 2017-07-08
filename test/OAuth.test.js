@@ -1,14 +1,15 @@
-const expect = require('chai').expect;
-const urlParser = require('url');
-const OAuth = require('../OAuth');
+const expect = require('chai').expect
+const urlParser = require('url')
+const OAuth = require('../lib/OAuth')
 
 var option = {
   appId: 'wx74205b421dc1f3eb',
   appSecret: '',
   host: 'http://app.xxx.com/',
   proxy: 'http://oauthproxy.xxx.com/'
-};
-var oauth = new OAuth(option);
+}
+
+var oauth = new OAuth(option)
 
 describe('test OAuth.js', function () {
 
@@ -18,14 +19,14 @@ describe('test OAuth.js', function () {
       
       expect(oauth)
         .to.be.a('object')
-        .is.instanceof(OAuth);
+        .is.instanceof(OAuth)
 
       expect(oauth)
-        .to.contains.all.keys(option);
+        .to.contains.all.keys(option)
 
-    });
+    })
 
-  });
+  })
 
   describe('test wxLogin()', function () {
     
@@ -38,7 +39,7 @@ describe('test OAuth.js', function () {
         },
         session: {},
         query: {}
-      };
+      }
 
       var res = {
         redirect: function (url) {
@@ -48,11 +49,7 @@ describe('test OAuth.js', function () {
           urlJson = urlParser.parse(url, true);
           url = decodeURIComponent(urlJson.query.oauthredirect);
           expect(url).to.equal(urlParser.resolve(oauth.host, req.url));
-          
-          req.session.wxUser = {
-            nickname: 'xiaobai',
-            sex: 1
-          };
+
           oauth.wxLogin(req, res, next);
 
         }
@@ -60,10 +57,7 @@ describe('test OAuth.js', function () {
 
       var next = function () {
 
-        expect(req.session.wxUser)
-          .to.have.property('nickname', 'xiaobai')
-        expect(req.session.wxUser)
-          .to.have.property('sex', 1);
+        expect(req.session).to.be.an('object')
         done();
 
       };
@@ -82,9 +76,9 @@ describe('test OAuth.js', function () {
           scope = 'snsapi_userinfo',
           state = 'fromWX';
 
-      var url = oauth.getAuthorizeURL(redirect, scope, state);
+      var url = oauth.getAuthorizeURL(redirect, scope, state)
       
-      var urlJson = urlParser.parse(url, true);
+      var urlJson = urlParser.parse(url, true)
 
       expect(urlJson.query)
         .to.contains.all.keys({
@@ -93,79 +87,62 @@ describe('test OAuth.js', function () {
           state: state
         });
 
-      var redirect_uri = decodeURIComponent(urlJson.query.redirect_uri);
-      urlJson = urlParser.parse(redirect_uri, true);
+      var redirect_uri = decodeURIComponent(urlJson.query.redirect_uri)
+      urlJson = urlParser.parse(redirect_uri, true)
+      var proxy = `${urlJson.protocol}//${urlJson.host}${urlJson.pathname}`
 
-      var proxy = `${urlJson.protocol}//${urlJson.host}${urlJson.pathname}`;
+      expect(proxy).to.equal(option.proxy)
 
-      expect(proxy).to.equal(option.proxy);
+      var redirect2 = decodeURIComponent(urlJson.query.oauthredirect)
+      expect(redirect2).to.equal(redirect)
 
-      var redirect2 = decodeURIComponent(urlJson.query.oauthredirect);
-      expect(redirect2).to.equal(redirect);
+    })
 
-    });
-
-  });
+  })
 
   describe('test getAccessToken()', function () {
     
     it('should be ok', function (done) {
       
-      var promise = oauth.getAccessToken('aaa');
-      expect(promise).to.be.a('promise');
-
-      promise.then(result => {
-
+      var code = ''
+      oauth.getAccessToken(code, function (err, result) {
+        
+        expect(err).to.be.null
         expect(result)
           .to.have.property('errcode')
-          .be.a('number');
+          .be.a('number')
         expect(result)
           .to.have.property('errmsg')
-          .be.a('string');
-        done();
+          .be.a('string')
+        done()
 
-      }).catch(done);
+      })
 
-    });
+    })
 
-  });
+  })
 
   describe('test getUser()', function () {
     
     it('should be ok', function (done) {
       
-      var promise = oauth.getUser('openid', 'accessToken');
-      expect(promise).to.be.a('promise');
-
-      promise.then(result => {
-
+      var openid = ''
+      var accessToken = ''
+      oauth.getUser(openid, accessToken, function (err, result) {
+        
+        expect(err).to.be.null
         expect(result)
           .to.have.property('errcode')
-          .be.a('number');
+          .be.a('number')
         expect(result)
           .to.have.property('errmsg')
-          .be.a('string');
-        done();
+          .be.a('string')
+        done()
 
-      });
+      })
 
-    });
+    })
 
-  });
+  })
 
-  describe('test get()', function () {
-    
-    it('should be ok', function (done) {
-      
-      oauth.get('https://baidu.com', function (err, body) {
-        
-        expect(err).to.be.null;
-        expect(body).to.be.a('string');
-        done();
-
-      });
-
-    });
-
-  });
-});
+})

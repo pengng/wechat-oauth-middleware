@@ -1,8 +1,8 @@
-const OAuth = require('./OAuth');
+var OAuth = require('./lib/OAuth')
 
 module.exports = function (option) {
 
-  var oauth = new OAuth(option);
-  return oauth.wxLogin.bind(oauth);
+  var oauth = new OAuth(option)
+  return oauth.wxLogin.bind(oauth)
 
 }
