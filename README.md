@@ -1,70 +1,6 @@
-# wechat-oauth-middleware
+# 微信OAuth授权中间件
 
-Used to obtain WeChat user information.
-i.Required express framework
-
-## Usage
-```
-npm install -S wechat-oauth-middleware
-```
-```javascript
-const express = require('express')
-const wechatMiddleware = require('wechat-oauth-middleware')
-const app = express()
-
-app.use( wechatMiddleware({
-  appId: '', // your wechat public appId
-  appSecret: '' // your wechat public appSecret
-  host: '' // The domain name of your webapp. Like http://webapp.xxx.com
-}) )
-
-app.get('/', function (req, res) {
-  console.log(req.wxUser || req.session.wxUser)
-})
-```
-
-## Multiple domain names share an OAuth interface
-### Set the `proxy` parameter
-```javascript
-// www.A.com
-const express = require('express')
-const wechatMiddleware = require('wechat-oauth-middleware')
-const app = express()
-
-app.use( wechatMiddleware({
-  appId: '', // your wechat public appId
-  appSecret: '' // your wechat public appSecret
-  host: 'http://www.A.com' // The domain name of your webapp. Like http://webapp.xxx.com
-}) )
-
-app.get('/', function (req, res) {
-  console.log(req.wxUser || req.session.wxUser)
-})
-```
-```javascript
-// www.B.com
-const express = require('express')
-const wechatMiddleware = require('wechat-oauth-middleware')
-const app = express()
-
-app.use( wechatMiddleware({
-  appId: '', // your wechat public appId
-  appSecret: '' // your wechat public appSecret
-  host: 'http://www.B.com', // The domain name of your webapp. Like http://webapp.xxx.com
-  proxy: 'http://www.A.com'
-}) )
-
-app.get('/', function (req, res) {
-  console.log(req.wxUser || req.session.wxUser)
-})
-```
-
-## License
-MIT
-
-# 微信公众号OAuth授权获取用户信息
-
-Express 中间件。用于获取微信用户信息。需要微信服务号。
+Express 中间件。用于获取微信用户信息。
 
 ## 使用方法
 ```
@@ -88,6 +24,15 @@ app.get('/', function (req, res) {
   console.log(req.wxUser || req.session.wxUser)
 })
 ```
+
+### wechatMiddleware(options)
+##### options
+| 名称 | 类型 | 必填 | 描述 |
+| --- | --- | --- | --- |
+| appId | string | 是 | 微信公众号appId |
+| appSecret | string | 是 | 微信公众号appSecret |
+| host | string | 是 | 微信公众号设置的回调域名 |
+| scope | string | 否 | 微信授权类型，可选`snsapi_base`和`snsapi_userinfo` |
 
 ## 多个域名共用一个OAuth接口
 ### 设置`proxy`参数
