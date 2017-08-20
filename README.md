@@ -1,73 +1,112 @@
 # 微信OAuth授权中间件
 
-Express 中间件。用于获取微信用户信息。
+用于获取微信用户信息。
 
-## 使用方法
-```
+### Usage
+```bash
 npm install -S wechat-oauth-middleware
 ```
 
+### Use with express
+
 ```javascript
 const express = require('express')
-const wechatMiddleware = require('wechat-oauth-middleware')
+const oauth = require('wechat-oauth-middleware')
 const app = express()
 
-app.use( wechatMiddleware({
-  appId: '', // 填入微信服务号的appId
-  appSecret: '' // 填入微信服务号的appSecret
-  host: '' // 填入你的webapp的域名，例如 http://app.xxx.com
-}) )
+const oauthMiddleware = oauth({
+  appId: '',
+  appSecret: '',
+  host: '' // 填入微信公众号回调域名
+})
 
+// Apply to all routes
+app.use('*', oauthMiddleware)
 
-app.get('/', function (req, res) {
-  // 在路由回调传入的req对象中获取用户信息
+// Or apply to the specified route
+app.get('/wechat/*', oauthMiddleware)
+
+app.get('/wechat/login', function (req, res) {
   console.log(req.wxUser || req.session.wxUser)
 })
+
+app.listen(3000)
 ```
 
-### wechatMiddleware(options)
-##### options
+### Use with http
+
+```javascript
+const http = require('http')
+const oauth = require('wechat-oauth-middleware')
+const oauthMiddleware = oauth({
+  appId: '',
+  appSecret: '',
+  host: '' // 填入微信公众号回调域名
+})
+
+const server = http.createServer((req, res) => {
+  oauthMiddleware(req, res, () => {
+    console.log(req.wxUser)
+  })
+})
+
+server.listen(3000)
+```
+
+### wechatOauthMiddleware(options)
+
+##### options 对象属性
 | 名称 | 类型 | 必填 | 描述 |
 | --- | --- | --- | --- |
 | appId | string | 是 | 微信公众号appId |
 | appSecret | string | 是 | 微信公众号appSecret |
 | host | string | 是 | 微信公众号设置的回调域名 |
-| scope | string | 否 | 微信授权类型，可选`snsapi_base`和`snsapi_userinfo` |
+| [proxy](#proxy) | string | 否 | 代理域名。解决微信公众号只能设置一个回调域名的限制。
+| scope | string | 否 | 微信授权类型，可选`snsapi_base`和`snsapi_userinfo`。默认为`snsapi_base`。 |
 
-## 多个域名共用一个OAuth接口
-### 设置`proxy`参数
+### proxy
+
+解决一个微信公众号只能设置一个回调域名的限制。让多个域名共用一个OAuth接口。
+
+### How to use `proxy` ？
+
+### Proxy server
+
+先部署一个代理服务器。
+
 ```javascript
-// www.A.com
 const express = require('express')
-const wechatMiddleware = require('wechat-oauth-middleware')
+const oauth = require('wechat-oauth-middleware')
 const app = express()
 
-app.use( wechatMiddleware({
-  appId: '', // 填入微信服务号的appId
-  appSecret: '' // 填入微信服务号的appSecret
-  host: 'http://www.A.com' // 填入你的webapp的域名，例如 http://app.xxx.com
-}) )
+app.use(oauth({
+  appId: '',
+  appSecret: '',
+  host: '' // 填入微信公众号回调域名。在域名服务商那里设置好域名，解析到当前主机，用反向代理代理到当前服务启动的端口。
+}))
 
-app.get('/', function (req, res) {
-  // 在路由回调传入的req对象中获取用户信息
-  console.log(req.wxUser || req.session.wxUser)
-})
+app.listen(3000)
 ```
+
+### Work server
+
+工作服务器，可多个都使用代理服务器来获取用户信息。
+
 ```javascript
-// www.B.com
 const express = require('express')
-const wechatMiddleware = require('wechat-oauth-middleware')
+const oauth = require('wechat-oauth-middleware')
 const app = express()
 
-app.use( wechatMiddleware({
-  appId: '', // 填入微信服务号的appId
-  appSecret: '' // 填入微信服务号的appSecret
-  host: 'http://www.A.com' // 填入你的webapp的域名，例如 http://app.xxx.com
-  proxy: 'http://www.B.com'
-}) )
+app.use(oauth({
+  appId: '',
+  appSecret: '',
+  host: '', // 填入工作服务器的域名
+  proxy: '' // 填入代理服务器的域名
+}))
 
-app.get('/', function (req, res) {
-  // 在路由回调传入的req对象中获取用户信息
+app.get('/', (req, res) => {
   console.log(req.wxUser || req.session.wxUser)
 })
+
+app.listen(3001)
 ```
