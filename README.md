@@ -53,6 +53,32 @@ const server = http.createServer((req, res) => {
 server.listen(3000)
 ```
 
+### 单页面应用
+
+适用于单页应用的子页面获取用户信息。
+将页面重定向到类似如下地址：`'http://xxx.com/oauth?oauth_redirect=' + encodeURIComponent(location.href)`
+> 注意：
+> - 这里的`http://xxx.com/`需替换为`node`端服务的域名
+> - 路径`/oauth`需替换为`oauth`中间件挂载的路由
+> - `location.href`替换为需要获取用户信息的页面地址
+
+```javascript
+// node 端，域名为http://xxx.com，挂载路由为 /oauth
+const express = require('express')
+const oauth = require('wechat-oauth-middleware')
+const app = express()
+
+const oauthMiddleware = oauth({
+  appId: '',
+  appSecret: '',
+  host: '' // 填入微信公众号回调域名
+})
+
+app.get('/oauth', oauth)
+
+app.listen(3000)
+```
+
 ### wechatOauthMiddleware(options)
 
 ##### options 对象属性
