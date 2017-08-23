@@ -56,11 +56,12 @@ server.listen(3000)
 ### 单页面应用
 
 适用于单页应用的子页面获取用户信息。
-将页面重定向到类似如下地址：`'http://xxx.com/oauth?oauth_redirect=' + encodeURIComponent(location.href)`
+将页面重定向到类似如下地址：`'http://xxx.com/oauth?hash_style=1&oauth_redirect=' + encodeURIComponent(location.href)`
 > 注意：
 > - 这里的`http://xxx.com/`需替换为`node`端服务的域名
 > - 路径`/oauth`需替换为`oauth`中间件挂载的路由
 > - `location.href`替换为需要获取用户信息的页面地址
+> - 如果页面路由为hash风格的就需要`hash_style=1`,否则不需要。
 
 ```javascript
 // node 端，域名为http://xxx.com，挂载路由为 /oauth
