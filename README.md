@@ -53,6 +53,49 @@ const server = http.createServer((req, res) => {
 server.listen(3000)
 ```
 
+### Use with Nuxt
+
+`middleware/oauth.js:`
+
+```javascript
+import wechatOauth from 'wechat-oauth-middleware'
+
+const oauth = wechatOauth({
+  appId: '',
+  appSecret: '',
+  host: ''
+})
+
+export default function (context) {
+  if (!context.isServer) {
+    return
+  }
+
+  context.res.redirect = context.redirect
+  return new Promise((resolve, reject) => {
+    oauth(context.req, context.res, resolve)
+  })
+}
+```
+
+`pages/login.vue:`
+
+```javascript
+<script>
+export default {
+  middleware: ['oauth'],
+  asyncData (context) {
+    return {
+      wxUser: context.req.wxUser
+    }
+  },
+  mounted () {
+    alert(JSON.stringify(this.wxUser, null, 2))
+  }
+}
+</script>
+```
+
 ### 单页面应用
 
 适用于单页应用的子页面获取用户信息。
