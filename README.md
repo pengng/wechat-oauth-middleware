@@ -126,13 +126,14 @@ app.listen(3000)
 ### wechatOauthMiddleware(options)
 
 ##### options 对象属性
-| 名称 | 类型 | 必填 | 描述 |
-| --- | --- | --- | --- |
-| appId | string | 是 | 微信公众号appId |
-| appSecret | string | 是 | 微信公众号appSecret |
-| host | string | 是 | 微信公众号设置的回调域名 |
-| [proxy](#proxy) | string | 否 | 代理域名。解决微信公众号只能设置一个回调域名的限制。
-| scope | string | 否 | 微信授权类型，可选`snsapi_base`和`snsapi_userinfo`。默认为`snsapi_base`。 |
+| 名称              | 类型               | 必填   | 描述                                       |
+| --------------- | ---------------- | ---- | ---------------------------------------- |
+| appId           | string           | 是    | 微信公众号appId                               |
+| appSecret       | string           | 是    | 微信公众号appSecret                           |
+| host            | string           | 是    | 微信公众号设置的回调域名                             |
+| [proxy](#proxy) | string           | 否    | 代理域名。解决微信公众号只能设置一个回调域名的限制。               |
+| scope           | string           | 否    | 微信授权类型，可选`snsapi_base`和`snsapi_userinfo`。默认为`snsapi_base`。 |
+| noWechat        | boolean & string | 否    | 当用户用非微信浏览器打开时，是否显示提醒页面。<br/>为`true`表示显示内置页面，也可以指定自定义`html`页面文件地址。 |
 
 ### proxy
 
