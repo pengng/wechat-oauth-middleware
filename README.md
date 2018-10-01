@@ -1,33 +1,69 @@
-# 微信OAuth授权中间件
+# wechat-oauth-middleware
 
-用于获取微信用户信息。
+用于微信网页授权，获取用户信息
+
+- 两种模式
+  - 如果是服务器需要保存用户的授权信息，则使用中间件，在中间件下游通过请求对象的**wx**属性拿到用户信息。
+  - 如果是浏览器端要展示用户授权信息，则使用**Forward**模式。服务器配置好一个端点，当前端页面需要获取用户信息时，利用 `location.href` 重定向到配置好的端点，重定向时带上 **referer** 参数，值为当前页面的链接，经过 **页面A => 服务器B => 微信授权页C => 服务器B => 页面A**，最后在页面A 的 `location.href` 中获取用户信息。
+
+- 三种 web 框架适配
+  - express
+  - koa
+  - native http
 
 ### Usage
 ```bash
-npm install -S wechat-oauth-middleware
+npm i wechat-oauth-middleware -S
+```
+
+### Use with Koa
+
+```javascript
+const Koa = require('koa')
+const OAuth = require('wechat-oauth-middleware')
+
+const app = new Koa()
+const oauth = OAuth({
+    appId: 'xxx',
+    appSecret: 'xxx',
+	scope: OAuth.SCOPE_USER_INFO
+})
+
+// 使用中间件
+app.use(oauth.koa)
+// 获取到的用户信息放在 ctx.wx 属性上
+app.use(async (ctx) => {
+    console.log(ctx.wx)
+    ctx.body = 'ok'
+})
+
+app.listen(3000)
 ```
 
 ### Use with express
 
 ```javascript
 const express = require('express')
-const oauth = require('wechat-oauth-middleware')
-const app = express()
+const OAuth = require('wechat-oauth-middleware')
 
-const oauthMiddleware = oauth({
-  appId: '',
-  appSecret: '',
-  host: '' // 填入微信公众号回调域名
+const app = express()
+// 配置中间件
+const oauth = OAuth({
+	appId: 'xxx',
+	appSecret: 'xxx',
+	scope: OAuth.SCOPE_USER_INFO
 })
 
-// Apply to all routes
-app.use('*', oauthMiddleware)
+// 配置错误处理
+app.use((err, req, res, next) => {
+    console.warn(err)
+    res.status(500).end('fail')
+})
 
-// Or apply to the specified route
-app.get('/wechat/*', oauthMiddleware)
-
-app.get('/wechat/login', function (req, res) {
-  console.log(req.wxUser || req.session.wxUser)
+// 配置路由，使用中间件，获取到的用户信息会放到请求对象的wx属性上
+app.get('/wechat/login', oauth.express, (req, res) => {
+	console.log(req.wx)
+	res.end('ok')
 })
 
 app.listen(3000)
@@ -37,147 +73,127 @@ app.listen(3000)
 
 ```javascript
 const http = require('http')
-const oauth = require('wechat-oauth-middleware')
-const oauthMiddleware = oauth({
-  appId: '',
-  appSecret: '',
-  host: '' // 填入微信公众号回调域名
+const OAuth = require('wechat-oauth-middleware')
+
+// 配置中间件
+const oauth = OAuth({
+	appId: 'xxx',
+	appSecret: 'xxx',
+	scope: OAuth.SCOPE_USER_INFO
 })
 
 const server = http.createServer((req, res) => {
-  oauthMiddleware(req, res, () => {
-    console.log(req.wxUser)
-  })
+    // 将请求对象和响应对象传入中间件，在回调中可以拿到错误对象和用户信息
+    oauth.native(req, res, (err, ret) => {
+        if (err) {
+            console.error(err)
+            res.status(500).end('fail')
+            return
+        }
+        console.log(ret)
+        res.end('ok')
+    })
 })
 
 server.listen(3000)
 ```
 
-### Use with Nuxt
+### Forward 模式
 
-`middleware/oauth.js:`
+用于前端展示用户的信息
 
-```javascript
-import wechatOauth from 'wechat-oauth-middleware'
-
-const oauth = wechatOauth({
-  appId: '',
-  appSecret: '',
-  host: ''
-})
-
-export default function (context) {
-  if (!context.isServer) {
-    return
-  }
-
-  context.res.redirect = context.redirect
-  return new Promise((resolve, reject) => {
-    oauth(context.req, context.res, resolve)
-  })
-}
-```
-
-`pages/login.vue:`
+##### 在服务器A.com配置授权端点，以express框架为例
 
 ```javascript
-<script>
-export default {
-  middleware: ['oauth'],
-  asyncData (context) {
-    return {
-      wxUser: context.req.wxUser
-    }
-  },
-  mounted () {
-    alert(JSON.stringify(this.wxUser, null, 2))
-  }
-}
-</script>
-```
-
-### 单页面应用
-
-适用于单页应用的子页面获取用户信息。
-将页面重定向到类似如下地址：`'http://xxx.com/oauth?hash_style=1&oauth_redirect=' + encodeURIComponent(location.href)`
-> 注意：
-> - 这里的`http://xxx.com/`需替换为`node`端服务的域名
-> - 路径`/oauth`需替换为`oauth`中间件挂载的路由
-> - `location.href`替换为需要获取用户信息的页面地址
-> - 如果页面路由为hash风格的就需要`hash_style=1`,否则不需要。
-
-```javascript
-// node 端，域名为http://xxx.com，挂载路由为 /oauth
 const express = require('express')
-const oauth = require('wechat-oauth-middleware')
-const app = express()
+const OAuth = require('wechat-oauth-middleware')
 
-const oauthMiddleware = oauth({
-  appId: '',
-  appSecret: '',
-  host: '' // 填入微信公众号回调域名
+const app = express()
+const oauth = OAuth({
+    appId: 'xxx',
+    appSecret: 'xxx',
+    scope: OAuth.SCOPE_USER_INFO
 })
 
-app.get('/oauth', oauth)
+// 将 express 属性传入 forward 方法获得转发功能
+// 此时授权端点为 http://A.com/auth
+app.get('/auth', oauth.forward(oauth.express))
+
+app.listen(3000)
+
+```
+
+##### 在前端页面需要用户信息时，重定向到授权端点
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+    <script>
+        let query = {}
+        // 解析地址栏的参数
+        if (location.search) {
+            location.search.slice(1).split('&').forEach(raw => {
+                let map = raw.split('=')
+                query[map[0]] = decodeURIComponent(map[1])
+            })
+        }
+        // 判断是否已经拿到数据
+        if (query.openid) {
+            // 如果地址栏已经有用户信息，则输出到页面
+            document.write('<pre>' + JSON.stringify(query, null, 4) + '</pre>')
+        } else {
+            // 重定向到配置好的端点，要带上 referer 参数，获取到用户信息后才能正确跳转回当前页面
+            location.href = 'http://A.com/auth?referer=' + encodeURIComponent(location.href)
+        }
+    </script>
+</body>
+</html>
+```
+
+##### Koa 配置转发端点示例
+
+```javascript
+const Koa = require('koa')
+const router = require('koa-router')()
+const OAuth = require('wechat-oauth-middleware')
+
+const app = new Koa()
+const oauth = OAuth({
+    appId: 'xxx',
+    appSecret: 'xxx',
+    scope: OAuth.SCOPE_USER_INFO
+})
+
+router.get('/auth', oauth.forward(oauth.koa))
+app.use(router.routes())
 
 app.listen(3000)
 ```
 
-### wechatOauthMiddleware(options)
-
-##### options 对象属性
-| 名称              | 类型               | 必填   | 描述                                       |
-| --------------- | ---------------- | ---- | ---------------------------------------- |
-| appId           | string           | 是    | 微信公众号appId                               |
-| appSecret       | string           | 是    | 微信公众号appSecret                           |
-| host            | string           | 是    | 微信公众号设置的回调域名                             |
-| [proxy](#proxy) | string           | 否    | 代理域名。解决微信公众号只能设置一个回调域名的限制。               |
-| scope           | string           | 否    | 微信授权类型，可选`snsapi_base`和`snsapi_userinfo`。默认为`snsapi_base`。 |
-| noWechat        | boolean & string | 否    | 当用户用非微信浏览器打开时，是否显示提醒页面。<br/>为`true`表示显示内置页面，也可以指定自定义`html`页面文件地址。 |
-
-### proxy
-
-解决一个微信公众号只能设置一个回调域名的限制。让多个域名共用一个OAuth接口。
-
-### How to use `proxy` ？
-
-### Proxy server
-
-先部署一个代理服务器。
+##### 原生 http 包配置转发端点示例
 
 ```javascript
-const express = require('express')
-const oauth = require('wechat-oauth-middleware')
-const app = express()
-
-app.use(oauth({
-  appId: '',
-  appSecret: '',
-  host: '' // 填入微信公众号回调域名。在域名服务商那里设置好域名，解析到当前主机，用反向代理代理到当前服务启动的端口。
-}))
-
-app.listen(3000)
-```
-
-### Work server
-
-工作服务器，可多个都使用代理服务器来获取用户信息。
-
-```javascript
-const express = require('express')
-const oauth = require('wechat-oauth-middleware')
-const app = express()
-
-app.use(oauth({
-  appId: '',
-  appSecret: '',
-  host: '', // 填入工作服务器的域名
-  proxy: '' // 填入代理服务器的域名
-}))
-
-app.get('/', (req, res) => {
-  console.log(req.wxUser || req.session.wxUser)
+const http = require('http')
+const OAuth = require('wechat-oauth-middleware')
+const oauth = OAuth({
+    appId: 'xxx',
+    appSecret: 'xxx',
+    scope: OAuth.SCOPE_USER_INFO
 })
 
-app.listen(3001)
+http.createServer(oauth.forward(oauth.native)).listen(3000)
 ```
+
+### OAuth(opt)
+
+- `opt` \<Object\>
+  - `appId` \<string\> 必填，微信公众号appId
+  - `appSecret` \<string\> 必填，微信公众号appSecret
+  - `scope` \<string\> 微信授权类型，可选`snsapi_base`和`snsapi_userinfo`。默认为`snsapi_base`。
+

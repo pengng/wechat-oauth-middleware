@@ -1,8 +1,5 @@
-var OAuth = require('./lib/OAuth')
+let { SCOPE_BASE, SCOPE_USER_INFO } = require('./lib/wechat-api')
+let OAuth = require('./lib/OAuth')
+Object.assign(OAuth, { SCOPE_BASE, SCOPE_USER_INFO })
 
-module.exports = function (option) {
-
-  var oauth = new OAuth(option)
-  return oauth.wxLogin.bind(oauth)
-
-}
+module.exports = OAuth

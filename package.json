@@ -1,27 +1,21 @@
 {
-  "name": "wechat-oauth-middleware",
-  "version": "2.0.13",
-  "description": "Used to obtain WeChat user information.",
-  "main": "index.js",
-  "scripts": {
-    "test": "mocha"
-  },
-  "keywords": [
-    "wechat",
-    "OAuth",
-    "middleware",
-    "微信公众号"
-  ],
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/pengng/wechat-oauth-middleware.git"
-  },
-  "author": "pengng",
-  "license": "ISC",
-  "devDependencies": {
-    "chai": "^3.5.0"
-  },
-  "dependencies": {
-    "request-client": "^1.0.0"
-  }
+    "name": "wechat-oauth-middleware",
+    "version": "3.0.0",
+    "description": "Used to obtain WeChat user information.",
+    "main": "index.js",
+    "scripts": {
+        "test": "mocha"
+    },
+    "keywords": [
+        "wechat",
+        "OAuth",
+        "middleware",
+        "微信公众号"
+    ],
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/pengng/wechat-oauth-middleware.git"
+    },
+    "author": "pengng",
+    "license": "ISC"
 }
