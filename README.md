@@ -4,19 +4,26 @@
 
 - 两种模式
   - 如果是服务器需要保存用户的授权信息，则使用中间件，在中间件下游通过请求对象的**wx**属性拿到用户信息。
-  - 如果是浏览器端要展示用户授权信息，则使用**Forward**模式。服务器配置好一个端点，当前端页面需要获取用户信息时，利用 `location.href` 重定向到配置好的端点，重定向时带上 **referer** 参数，值为当前页面的链接，经过 **页面A => 服务器B => 微信授权页C => 服务器B => 页面A**，最后在页面A 的 `location.href` 中获取用户信息。
+  - 如果是浏览器端要展示用户授权信息，则使用转发模式。服务器配置好一个端点，当前端页面需要获取用户信息时，利用 `location.href` 重定向到配置好的端点，重定向时带上 **referer** 参数，值为当前页面的链接，经过 **页面A => 服务器B => 微信授权页C => 服务器B => 页面A**，最后在页面A 的 `location.href` 中获取用户信息。
 
-- 三种 web 框架适配
+- 搭配三种常用的 web 框架
   - express
   - koa
-  - native http
+  - 原生 http 模块
 
 ### Usage
 ```bash
 npm i wechat-oauth-middleware -S
 ```
 
-### Use with Koa
+### OAuth(opt)
+
+- `opt` \<Object\>
+  - `appId` \<string\> 必填，微信公众号appId
+  - `appSecret` \<string\> 必填，微信公众号appSecret
+  - `scope` \<string\> 微信授权类型，可选`snsapi_base`和`snsapi_userinfo`。默认为`snsapi_base`。
+
+### 搭配 Koa 框架
 
 ```javascript
 const Koa = require('koa')
@@ -40,7 +47,7 @@ app.use(async (ctx) => {
 app.listen(3000)
 ```
 
-### Use with express
+### 搭配 express 框架
 
 ```javascript
 const express = require('express')
@@ -69,7 +76,7 @@ app.get('/wechat/login', oauth.express, (req, res) => {
 app.listen(3000)
 ```
 
-### Use with http
+### 搭配原生 http 模块
 
 ```javascript
 const http = require('http')
@@ -98,7 +105,7 @@ const server = http.createServer((req, res) => {
 server.listen(3000)
 ```
 
-### Forward 模式
+### 转发模式
 
 用于前端展示用户的信息
 
@@ -189,11 +196,3 @@ const oauth = OAuth({
 
 http.createServer(oauth.forward(oauth.native)).listen(3000)
 ```
-
-### OAuth(opt)
-
-- `opt` \<Object\>
-  - `appId` \<string\> 必填，微信公众号appId
-  - `appSecret` \<string\> 必填，微信公众号appSecret
-  - `scope` \<string\> 微信授权类型，可选`snsapi_base`和`snsapi_userinfo`。默认为`snsapi_base`。
-

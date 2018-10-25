@@ -1,16 +1,18 @@
 {
     "name": "wechat-oauth-middleware",
-    "version": "3.0.1",
-    "description": "Used to obtain WeChat user information.",
+    "version": "3.0.2",
+    "description": "用于微信网页授权，获取微信用户的授权信息",
     "main": "index.js",
     "scripts": {
         "test": "mocha"
     },
     "keywords": [
-        "wechat",
-        "OAuth",
-        "middleware",
-        "微信公众号"
+        "微信",
+        "网页授权",
+        "微信公众号",
+        "oauth2.0",
+        "中间件",
+        "wechat"
     ],
     "repository": {
         "type": "git",
